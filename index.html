@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>中文默書 Flash Cards — 第三課</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: -apple-system, "PingFang HK", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+    background: #FFF7E6;
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px 40px;
+    color: #333;
+  }
+  h1 { font-size: 26px; margin-bottom: 4px; text-align: center; }
+  .sub { font-size: 15px; color: #888; margin-bottom: 6px; text-align: center; }
+  .sub b { color: #E8590C; }
+  .progress-wrap { width: 100%; max-width: 420px; margin: 14px 0 4px; }
+  .progress-text { font-size: 14px; color: #666; text-align: center; margin-bottom: 6px; }
+  .progress-bar { height: 10px; background: #FFE8CC; border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: #FF8A00; width: 0%; transition: width .3s; }
+  .counter { font-size: 13px; color: #999; text-align: center; margin-top: 6px; }
+
+  .card-scene { width: 100%; max-width: 420px; height: 300px; perspective: 1000px; margin: 18px 0 8px; cursor: pointer; }
+  .card { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform .45s; }
+  .card.flipped { transform: rotateY(180deg); }
+  .face {
+    position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 24px; box-shadow: 0 6px 24px rgba(0,0,0,.12);
+  }
+  .face.front { background: #fff; border: 3px solid #FF8A00; }
+  .face.back { background: #FF8A00; color: #fff; transform: rotateY(180deg); }
+  .pinyin { font-size: 30px; font-weight: 700; color: #E8590C; letter-spacing: 1px; }
+  .english { font-size: 22px; color: #555; margin-top: 14px; }
+  .hint { font-size: 13px; color: #BBB; margin-top: 26px; }
+  .chars { font-size: 96px; font-weight: 700; line-height: 1.1; }
+  .chars-sub { font-size: 18px; margin-top: 10px; opacity: .9; }
+  .bonus-tag {
+    position: absolute; top: 14px; right: 16px; background: #FFD43B; color: #7A5200;
+    font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 99px;
+  }
+  .tap-hint { font-size: 13px; color: #AAA; text-align: center; margin-bottom: 14px; }
+
+  .mark-row { display: flex; gap: 12px; width: 100%; max-width: 420px; }
+  .mark-row button {
+    flex: 1; padding: 14px 0; font-size: 17px; font-weight: 700; border: none; border-radius: 14px; cursor: pointer;
+  }
+  .btn-still { background: #FFE3E3; color: #C92A2A; }
+  .btn-know { background: #D3F9D8; color: #2B8A3E; }
+  .nav-row { display: flex; gap: 12px; width: 100%; max-width: 420px; margin-top: 12px; }
+  .nav-row button {
+    flex: 1; padding: 13px 0; font-size: 16px; font-weight: 600; border-radius: 14px; cursor: pointer;
+    background: #fff; border: 2px solid #FFD8A8; color: #E8590C;
+  }
+  .tools { display: flex; gap: 12px; width: 100%; max-width: 420px; margin-top: 12px; }
+  .tools button {
+    flex: 1; padding: 11px 0; font-size: 15px; border-radius: 14px; cursor: pointer;
+    background: #FFF4E6; border: 1.5px solid #FFD8A8; color: #866; font-weight: 600;
+  }
+  .tools button.active { background: #E8590C; color: #fff; border-color: #E8590C; }
+  .done {
+    display: none; text-align: center; margin-top: 18px; background: #D3F9D8; color: #2B8A3E;
+    padding: 16px; border-radius: 16px; width: 100%; max-width: 420px; font-size: 18px; font-weight: 700;
+  }
+  .word-list { width: 100%; max-width: 420px; margin-top: 26px; }
+  .word-list h2 { font-size: 17px; margin-bottom: 8px; }
+  .word-list table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; font-size: 15px; }
+  .word-list td, .word-list th { padding: 9px 10px; border-bottom: 1px solid #F1F3F5; text-align: left; }
+  .word-list tr:last-child td { border-bottom: none; }
+  .word-list td.ch { font-size: 20px; }
+  .word-list td.done-mark { color: #2B8A3E; font-weight: 700; }
+</style>
+</head>
+<body>
+  <h1>中文默書 Flash Cards</h1>
+  <div class="sub">三年級 · 第三課「今天是八月二十日」<br>默書：<b>2026年11月24日（星期二）</b> · 拼音會提供</div>
+
+  <div class="progress-wrap">
+    <div class="progress-text" id="progressText">識咗 0 / 10 個</div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="counter" id="counter">第 1 / 10 張</div>
+  </div>
+
+  <div class="card-scene" id="scene">
+    <div class="card" id="card">
+      <div class="face front">
+        <span class="bonus-tag" id="bonusTag" style="display:none">BONUS</span>
+        <div class="pinyin" id="frontPinyin"></div>
+        <div class="english" id="frontEnglish"></div>
+        <div class="hint" id="frontHint">㩒卡反轉睇中文</div>
+      </div>
+      <div class="face back">
+        <div class="chars" id="backChars"></div>
+        <div class="chars-sub" id="backSub"></div>
+      </div>
+    </div>
+  </div>
+  <div class="tap-hint">👆 㩒張卡反轉 · 睇完㩒「識」或者「未識」</div>
+
+  <div class="mark-row">
+    <button class="btn-still" id="btnStill">😕 未識</button>
+    <button class="btn-know" id="btnKnow">😊 識</button>
+  </div>
+  <div class="nav-row">
+    <button id="btnPrev">← 上一張</button>
+    <button id="btnNext">下一張 →</button>
+  </div>
+  <div class="tools">
+    <button id="btnShuffle">🔀 洗牌</button>
+    <button id="btnTest">✏️ 默書模式</button>
+    <button id="btnReset">↺ 重新開始</button>
+  </div>
+
+  <div class="done" id="doneBox">🎉 10 個全部識晒！星期二默書加油！</div>
+
+  <div class="word-list">
+    <h2>全部生字</h2>
+    <table>
+      <tr><th>拼音</th><th>中文</th><th>英文</th><th></th></tr>
+      <tbody id="wordTable"></tbody>
+    </table>
+  </div>
+
+<script>
+const WORDS = [
+  { pinyin: "rì", chars: "日", en: "Day" },
+  { pinyin: "yuè", chars: "月", en: "Month" },
+  { pinyin: "nián", chars: "年", en: "Year" },
+  { pinyin: "zuó tiān", chars: "昨天", en: "Yesterday" },
+  { pinyin: "jīn tiān", chars: "今天", en: "Today" },
+  { pinyin: "míng tiān", chars: "明天", en: "Tomorrow" },
+  { pinyin: "xīng qī", chars: "星期", en: "Week" },
+  { pinyin: "shēng rì", chars: "生日", en: "Birthday" },
+  { pinyin: "jīn nián", chars: "今年", en: "This year" },
+  { pinyin: "shèng dàn jié", chars: "圣诞节", en: "Christmas", bonus: true },
+];
+let order = WORDS.map((_, i) => i);
+let idx = 0;
+let known = new Set();
+let testMode = false;
+
+const card = document.getElementById('card');
+const scene = document.getElementById('scene');
+
+function render() {
+  const w = WORDS[order[idx]];
+  card.classList.remove('flipped');
+  document.getElementById('frontPinyin').textContent = w.pinyin;
+  document.getElementById('frontEnglish').textContent = testMode ? '' : w.en;
+  document.getElementById('frontHint').textContent = testMode ? '默書模式：寫低呢個詞先，再㩒卡對答案' : '㩒卡反轉睇中文';
+  document.getElementById('backChars').textContent = w.chars;
+  document.getElementById('backSub').textContent = w.pinyin + ' · ' + w.en;
+  document.getElementById('bonusTag').style.display = w.bonus ? 'block' : 'none';
+  document.getElementById('counter').textContent = '第 ' + (idx + 1) + ' / ' + WORDS.length + ' 張';
+  document.getElementById('progressText').textContent = '識咗 ' + known.size + ' / ' + WORDS.length + ' 個';
+  document.getElementById('progressFill').style.width = (known.size / WORDS.length * 100) + '%';
+  document.getElementById('doneBox').style.display = known.size === WORDS.length ? 'block' : 'none';
+  const tb = document.getElementById('wordTable');
+  tb.innerHTML = WORDS.map((x, i) =>
+    '<tr><td>' + x.pinyin + '</td><td class="ch">' + x.chars + '</td><td>' + x.en + (x.bonus ? ' ⭐' : '') + '</td><td class="done-mark">' + (known.has(i) ? '✓' : '') + '</td></tr>'
+  ).join('');
+}
+function mark(knowIt) {
+  const i = order[idx];
+  if (knowIt) known.add(i); else known.delete(i);
+  if (idx < WORDS.length - 1) idx++;
+  render();
+}
+scene.addEventListener('click', () => card.classList.toggle('flipped'));
+document.getElementById('btnKnow').addEventListener('click', () => mark(true));
+document.getElementById('btnStill').addEventListener('click', () => mark(false));
+document.getElementById('btnNext').addEventListener('click', () => { idx = (idx + 1) % WORDS.length; render(); });
+document.getElementById('btnPrev').addEventListener('click', () => { idx = (idx - 1 + WORDS.length) % WORDS.length; render(); });
+document.getElementById('btnShuffle').addEventListener('click', () => {
+  for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+  idx = 0; render();
+});
+document.getElementById('btnTest').addEventListener('click', (e) => {
+  testMode = !testMode;
+  e.target.classList.toggle('active', testMode);
+  e.target.textContent = testMode ? '✏️ 默書模式：開' : '✏️ 默書模式';
+  render();
+});
+document.getElementById('btnReset').addEventListener('click', () => { known.clear(); idx = 0; render(); });
+render();
+</script>
+</body>
+</html>
